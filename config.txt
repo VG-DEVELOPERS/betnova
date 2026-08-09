@@ -2,10 +2,11 @@
 # BetNova Configuration
 # ============================================================
 
+
 API_ID = 38964816
-API_HASH = "YOUR_API_HASH"
-BOT_TOKEN = "YOUR_BOT_TOKEN"
-MONGO_URI = "YOUR_MONGODB_URI"
+API_HASH = "9d2820026088107f0e3e9f371f180f44"
+BOT_TOKEN = "7767129558:AAG37X4fCOfup03kgYzqf1gk9i7pSwH4MaQ"
+MONGO_URI = "mongodb+srv://rahul:rahulkr@cluster0.szdpcp6.mongodb.net/?retryWrites=true&w=majority"
 DATABASE_NAME = "betnova"
 
 CWALLET_GROUP_ID = -1001714870825
