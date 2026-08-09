@@ -1,7 +1,3 @@
-# ============================================================
-# BetNova Cwallet Userbot (Telethon)
-# ============================================================
-
 import re
 import asyncio
 import logging
@@ -11,19 +7,10 @@ from telethon import TelegramClient, events
 from telethon.tl.types import User
 
 from config import (
-    API_ID,
-    API_HASH,
-    CWALLET_GROUP_ID,
-    CWALLET_BOT_ID,
-    DEPOSIT_USERNAME,
-    USERBOT_SESSION,
+    API_ID, API_HASH, CWALLET_GROUP_ID, CWALLET_BOT_ID,
+    DEPOSIT_USERNAME, USERBOT_SESSION,
 )
-from database import (
-    init_db,
-    get_user_by_username,
-    credit_deposit,
-    save_deposit,
-)
+from database import init_db, get_user_by_username, credit_deposit, save_deposit
 
 logging.basicConfig(
     level=logging.INFO,
@@ -83,7 +70,6 @@ async def on_cwallet_message(event):
         if parsed["destination"] != DEPOSIT_USERNAME.lower():
             log.info("[CWallet] Destination mismatch, ignoring")
             return
-
         if parsed["currency"] != "USDT":
             log.info("[CWallet] Non-USDT tip ignored")
             return
@@ -126,11 +112,8 @@ async def on_cwallet_message(event):
             raise
 
         await credit_deposit(user["_id"], parsed["amount"])
-        log.info(
-            "[CWallet] Deposit credited | user=%s | +%.4f USDT → real_balance",
-            parsed["username"],
-            parsed["amount"],
-        )
+        log.info("[CWallet] Deposit credited | user=%s | +%.4f USDT → real_balance",
+                 parsed["username"], parsed["amount"])
 
     except Exception as e:
         log.exception("[CWallet] Error processing message: %s", e)
