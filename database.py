@@ -48,6 +48,7 @@ async def ensure_user(user_id: int, name: str = "", username: str = None):
             "games": 0,
             "biggest_win": 0.0,
             "game_counts": {"limbo": 0, "blackjack": 0},
+            "rank_level": 0,
             "created_at": now,
         },
         "$set": {
@@ -118,7 +119,6 @@ async def atomic_credit_win(user_id: int, total_return: float, profit: float, mo
     update = {"$inc": inc}
     if profit > 0:
         update["$max"] = {"biggest_win": float(profit)}
-
     await users.update_one({"_id": user_id}, update)
 
 
@@ -165,34 +165,77 @@ async def get_leaderboard(mode: str, limit: int = 10):
     return await cursor.to_list(length=limit)
 
 
+# Rank: no rank until $100. Level-up grants bonus to real_balance.
+RANK_TIERS = [
+    (0,       0,  "⬜ Unranked",     0.0),
+    (100,     1,  "⚡️ Iron I",       0.50),
+    (300,     2,  "⚡️ Iron II",      1.00),
+    (750,     3,  "⚡️ Iron III",     2.00),
+    (1500,    4,  "🥉 Bronze I",     3.00),
+    (3000,    5,  "🥉 Bronze II",    5.00),
+    (6000,    6,  "🥉 Bronze III",   8.00),
+    (10000,   7,  "🥈 Silver I",    12.00),
+    (18000,   8,  "🥈 Silver II",   18.00),
+    (30000,   9,  "🥈 Silver III",  25.00),
+    (50000,  10,  "🥇 Gold I",      40.00),
+    (80000,  11,  "🥇 Gold II",     60.00),
+    (120000, 12,  "🥇 Gold III",    90.00),
+    (200000, 13,  "👑 Platinum",   150.00),
+    (350000, 14,  "💎 Diamond",    250.00),
+    (600000, 15,  "🔥 Master",     400.00),
+    (1000000,16,  "🌟 Legend",     750.00),
+]
+
+
+def get_rank_tier(wagered: float):
+    current = RANK_TIERS[0]
+    for tier in RANK_TIERS:
+        if wagered >= tier[0]:
+            current = tier
+        else:
+            break
+    return current
+
+
 async def get_rank_info(wagered: float) -> str:
-    if wagered >= 50000:
-        return "💎 Diamond"
-    if wagered >= 20000:
-        return "👑 Platinum"
-    if wagered >= 10000:
-        return "🥇 Gold III"
-    if wagered >= 5000:
-        return "🥇 Gold II"
-    if wagered >= 2500:
-        return "🥇 Gold I"
-    if wagered >= 1000:
-        return "🥈 Silver III"
-    if wagered >= 500:
-        return "🥈 Silver II"
-    if wagered >= 250:
-        return "🥈 Silver I"
-    if wagered >= 100:
-        return "🥉 Bronze III"
-    if wagered >= 50:
-        return "🥉 Bronze II"
-    if wagered >= 10:
-        return "🥉 Bronze I"
-    if wagered >= 5:
-        return "⚡️ Iron III"
-    if wagered >= 1:
-        return "⚡️ Iron II"
-    return "⚡️ Iron I"
+    _, _, title, _ = get_rank_tier(float(wagered or 0))
+    return title
+
+
+async def check_and_apply_level_up(user_id: int):
+    user = await get_user(user_id)
+    if not user:
+        return None
+
+    wagered = float(user.get("wagered", 0))
+    old_level = int(user.get("rank_level", 0))
+    _, new_level, title, _ = get_rank_tier(wagered)
+
+    if new_level <= old_level:
+        return None
+
+    total_bonus = 0.0
+    unlocked = []
+    for tier_min, tier_level, tier_title, tier_bonus in RANK_TIERS:
+        if old_level < tier_level <= new_level and tier_bonus > 0:
+            total_bonus += tier_bonus
+            unlocked.append({"level": tier_level, "title": tier_title, "bonus": tier_bonus})
+
+    if total_bonus > 0:
+        await users.update_one(
+            {"_id": user_id},
+            {"$set": {"rank_level": new_level}, "$inc": {"real_balance": total_bonus}},
+        )
+    else:
+        await users.update_one({"_id": user_id}, {"$set": {"rank_level": new_level}})
+
+    return {
+        "old_level": old_level,
+        "new_level": new_level,
+        "title": title,
+        "total_bonus": total_bonus,
+        "unlocked": unlocked,
+    }
 
 
 def get_favorite_game(user: dict) -> str:
