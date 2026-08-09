@@ -1,0 +1,23 @@
+# ============================================================
+# BetNova Configuration
+# ============================================================
+
+API_ID = 38964816
+API_HASH = "YOUR_API_HASH"
+BOT_TOKEN = "YOUR_BOT_TOKEN"
+MONGO_URI = "YOUR_MONGODB_URI"
+DATABASE_NAME = "betnova"
+
+CWALLET_GROUP_ID = -1001234567890
+CWALLET_BOT_ID = 962775809
+DEPOSIT_USERNAME = "novadepos"
+
+STARTING_REAL_BALANCE = 0.0
+STARTING_VIRTUAL_COINS = 1000.0
+
+LIMBO_MIN = 1.01
+LIMBO_MAX = 900.0
+
+RAKEBACK_RATE = 0.01
+
+USERBOT_SESSION = "betnova_userbot"
