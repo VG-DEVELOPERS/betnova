@@ -1,14 +1,7 @@
-# ============================================================
-# BetNova Telegram Bot (Pyrogram) – Entry Point
-# ============================================================
-
 import logging
-
 from pyrogram import Client, idle
-
 from config import API_ID, API_HASH, BOT_TOKEN
 from database import init_db
-
 from handlers import balance, profile, tip
 from games import limbo, blackjack
 
