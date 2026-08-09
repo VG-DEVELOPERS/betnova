@@ -1,7 +1,3 @@
-# ============================================================
-# Shared helpers & keyboards
-# ============================================================
-
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
@@ -36,9 +32,7 @@ def main_menu_kb() -> InlineKeyboardMarkup:
                 InlineKeyboardButton("🔄 Rakeback", callback_data="menu_rakeback"),
                 InlineKeyboardButton("🎁 Tip", callback_data="menu_tip"),
             ],
-            [
-                InlineKeyboardButton("📜 History", callback_data="menu_history"),
-            ],
+            [InlineKeyboardButton("📜 History", callback_data="menu_history")],
         ]
     )
 
